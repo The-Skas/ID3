@@ -31,7 +31,8 @@ class ID3 {
 
 		Tree[] children;
 		String value;
-
+                public int col_index;
+                
 		public Tree(String val, Tree[] ch) {
 			value = val;
 			children = ch;
@@ -274,8 +275,8 @@ class ID3 {
                 
                 for(int i = 0; i < _data.length; i++)
                 {
-                    children[i].value = _data[i][this.class_index];
-                    children[i].children = null;
+                    children[i] = new Tree(_data[i][this.class_index],null);
+                    children[i].col_index = this.class_index;
                 }
                 
                 return children;
@@ -283,17 +284,23 @@ class ID3 {
             
             used_attribs_ind.add(best_ind);
             
+            Tree [] result = new Tree[this.stringCount[best_ind]];
+            
             for(int i = 0; i < this.stringCount[best_ind]; i++)
             {
                 String [][] _sub_data = splitDataBy(_data, this.strings[best_ind][i], best_ind);
                 
                 Tree[] children= buildTreeRec(_sub_data,(ArrayList<Integer>) used_attribs_ind.clone(), depth - 1 );
                 
+                Tree parent = new Tree( this.strings[best_ind][i], children);
                 
+                parent.col_index = best_ind;
+                
+                result[i] = parent;
                 
             }
             
-            return null;
+            return result;
         }
         
         public String [][] copy2DArrayRange(String [][] _arr, int start_ind, int new_size)
@@ -341,8 +348,9 @@ class ID3 {
                 
                 print2DArray(_arr);
                 System.out.println("****");
-                buildTreeRec(_arr,(ArrayList<Integer>) used_attribs_ind.clone(), 2);
+                Tree [] result= buildTreeRec(_arr,(ArrayList<Integer>) used_attribs_ind.clone(), 2);
                 
+                System.out.println("****");
            
 		// PUT  YOUR CODE HERE FOR TRAINING
                 
