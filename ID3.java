@@ -40,45 +40,28 @@ class ID3 {
 
 
 		
-//		public String toString(String indent) {
-//			if (children != null) {
-//				String s = "";
-//				for (int i = 0; i < children.length; i++)
-//					s += indent + data[0][value] + "=" +
-//							strings[value][i] + "\n" +
-//							children[i].toString(indent + '\t');
-//				return s;
-//			} else
-//				return indent + "Class: " + strings[attributes-1][value] + "\n";
-//		} // toString(String)
+		public String toString(String indent) {
+			if (children != null && children[0].col_index !=class_index ) {
+				String s = "";
+				for (int i = 0; i < children.length; i++)
+					s += indent +data[0][children[i].col_index] + "=" +
+                                                        children[i].value + "\n"+
+							children[i].toString(indent + '\t');
+				return s;
+			} 
+                        else
+                        {
+                            return indent+"Class: "+children[0].value+"\n";
+                        }
+		} // toString(String)
+                
+                public String toString() {
+                    return this.toString("");
+                }
 
 	} // inner class Tree
         
-        class _Tree {
-
-		_Tree[] children;
-		int value;
-
-		public _Tree(int val, _Tree[] ch) {
-			value = val;
-			children = ch;
-		} // constructor
-
-
-		
-		public String toString(String indent) {
-			if (children != null) {
-				String s = "";
-				for (int i = 0; i < children.length; i++)
-					s += indent + data[0][value] + "=" +
-							strings[value][i] + "\n" +
-							children[i].toString(indent + '\t');
-				return s;
-			} else
-				return indent + "Class: " + strings[attributes-1][value] + "\n";
-		} // toString(String)
-
-	} // inner class Tree
+        
 
 	private int attributes; 	// Number of attributes (including the class)
 	private int examples;		// Number of training examples
@@ -120,9 +103,40 @@ class ID3 {
 	/** Execute the decision tree on the given examples in testData, and print
 	 *  the resulting class names, one to a line, for each example in testData.
 	 **/
+        
+        public String recursiveClassify(String [] row, Tree tree)
+        {
+            
+            if(tree.children[0].col_index == this.class_index )
+            {
+                return tree.children[0].value ;
+            }
+            
+            
+            
+            for(int i = 0; i < tree.children.length; i++)
+            {
+                String col_value = row[tree.children[i].col_index];
+                if(col_value.equals(tree.children[i].value))
+                {
+                    return recursiveClassify(row, tree.children[i] );
+                            
+                }
+            }
+            
+            return "";
+        }
+        
 	public void classify(String[][] testData) {
 		if (decisionTree == null)
 			error("Please run training phase before classification");
+                
+                for(int i = 1; i < testData.length; i++)
+                {
+                    String result = recursiveClassify(testData[i], decisionTree);
+                    System.out.println(result);
+                }               
+                
 		// PUT  YOUR CODE HERE FOR CLASSIFICATION
 	} // classify()
         
@@ -271,13 +285,12 @@ class ID3 {
             //Construct graph with the last ind
             if(best_ind == -1 || depth == 0)
             {
-                Tree [] children = new Tree[_data.length];
+                Tree [] children = new Tree[1];
                 
-                for(int i = 0; i < _data.length; i++)
-                {
-                    children[i] = new Tree(_data[i][this.class_index],null);
-                    children[i].col_index = this.class_index;
-                }
+              
+                children[0] = new Tree(_data[0][this.class_index],null);
+                children[0].col_index = this.class_index;
+
                 
                 return children;
             }
@@ -350,6 +363,7 @@ class ID3 {
                 System.out.println("****");
                 Tree [] result= buildTreeRec(_arr,(ArrayList<Integer>) used_attribs_ind.clone(), 2);
                 
+                this.decisionTree = new Tree(null, result);
                 System.out.println("****");
            
 		// PUT  YOUR CODE HERE FOR TRAINING
@@ -430,8 +444,8 @@ class ID3 {
 		ID3 classifier = new ID3();
 		classifier.train(trainingData);
                 classifier.printStrings();
-		//classifier.printTree();
-		//classifier.classify(testData);
+		classifier.printTree();
+		classifier.classify(testData);
                 
                 
 	} // main()
